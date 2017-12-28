@@ -5,7 +5,8 @@ const defaults = {
   ttl: 30 * 86400000, // 30 days
   domains: [],
   inboundKeys: ['engine', 'network', 'site', 'from', 'client'],
-  decorationName: 'getOriginalReferrer'
+  decorationName: 'getOriginalReferrer',
+  verbose: false
 };
 
 exports.register = (server, options, next) => {
@@ -57,10 +58,6 @@ exports.register = (server, options, next) => {
         return reply.continue();
       }
 
-      if (data.type === 'direct') {
-        return reply.continue();
-      }
-
       const refString = [];
 
       refString.push(data.type);
@@ -72,6 +69,14 @@ exports.register = (server, options, next) => {
       });
 
       const cookieValue = `${refString.join('-')}||${Date.now()}||${encodeURIComponent(request.info.referrer)}`;
+
+      if (options.verbose) {
+        server.log(['hapi-referer', 'set-cookie', 'info'], {
+          cookieName: options.cookieName,
+          cookieValue,
+          ttl: options.ttl
+        });
+      }
 
       reply.state(options.cookieName, cookieValue, {
         path: '/',

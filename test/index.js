@@ -37,7 +37,7 @@ lab.test('direct visits', async () => {
 
   const { res } = await wreck.get('http://localhost:8000/');
   const cookie = res.headers['set-cookie'] || [];
-  code.expect(cookie.length).to.equal(0);
+  code.expect(cookie.length).to.equal(1);
 });
 
 lab.test('referrer set', async () => {
@@ -85,8 +85,10 @@ lab.test('empty referrer set', async () => {
       referrer: ''
     }
   });
+
+  // Treated as direct visit
   const cookie = res.headers['set-cookie'] || [];
-  code.expect(cookie.length).to.equal(0);
+  code.expect(cookie.length).to.equal(1);
 });
 
 lab.test('bad referrer set', async () => {
@@ -229,4 +231,37 @@ lab.test('decorate request with getOriginalReferrer - no ref', async () => {
 
   code.expect(ref).to.be.an.object();
   code.expect(ref).to.equal({});
+});
+
+lab.test('verbose mode logs when cookie set', async () => {
+  let log;
+
+  server.route({
+    method: 'GET',
+    path: '/',
+    handler(request, reply) {
+      reply('ok');
+    }
+  });
+
+  await server.register({
+    register: hapiReferrer,
+    options: {
+      verbose: true
+    }
+  });
+
+  await server.start();
+
+  server.on('log', l => {
+    log = l;
+  });
+
+  await wreck.get('http://localhost:8000/', {
+    headers: {
+      referrer: 'https://www.google.co.uk/url?sa\u003dt\u0026rct\u003dj\u0026q\u003d\u0026esrc\u003ds\u0026source\u003dweb\u0026cd\u003d2\u0026ved\u003d0CEgQFjAB\u0026url\u003dhttps%3A%2F%2Fwww.datanitro.com%2F\u0026ei\u003d02ImUK--C6KX1AWbpIDICg\u0026usg\u003dAFQjCNHOS6IopwZTOOXX-temg3t9jph8SQ\u0026sig2\u003dtzL6mJCTxRdYnOxnc3Dl5A'
+    }
+  });
+
+  code.expect(log.tags).to.equal(['hapi-referer', 'set-cookie', 'info']);
 });
