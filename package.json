@@ -1,0 +1,42 @@
+{
+  "name": "hapi-referrer",
+  "version": "1.0.0",
+  "description": "Tracks referrers",
+  "main": "index.js",
+  "engine": {
+    "node": ">=6.0.0"
+  },
+  "scripts": {
+    "test": "lab --leaks -e test -c ",
+    "coveralls": "lab -r lcov | coveralls"
+  },
+  "eslintConfig": {
+    "extends": "firstandthird",
+    "rules": {
+      "no-underscore-dangle": 0
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/firstandthird/hapi-referrer.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/firstandthird/hapi-referrer/issues"
+  },
+  "homepage": "https://github.com/firstandthird/hapi-referrer#readme",
+  "dependencies": {
+    "inbound": "0.0.6"
+  },
+  "devDependencies": {
+    "code": "^5.1.2",
+    "coveralls": "^3.0.0",
+    "eslint": "^4.11.0",
+    "eslint-config-firstandthird": "^4.0.1",
+    "eslint-plugin-import": "^2.6.1",
+    "hapi": "^16.6.2",
+    "lab": "^15.1.2",
+    "wreck": "^14.0.2"
+  }
+}
