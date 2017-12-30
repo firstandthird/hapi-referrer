@@ -14,7 +14,13 @@ lab.beforeEach(() => {
 
   server.connection({
     host: 'localhost',
-    port: 8000
+    port: 8000,
+    routes: {
+      state: {
+        failAction: 'ignore'
+      },
+      log: false
+    }
   });
 });
 
@@ -36,6 +42,54 @@ lab.test('direct visits', async () => {
   await server.start();
 
   const { res } = await wreck.get('http://localhost:8000/');
+  const cookie = res.headers['set-cookie'] || [];
+  code.expect(cookie.length).to.equal(1);
+});
+
+lab.test('direct with invalid cookies', async () => {
+  server.route({
+    method: 'GET',
+    path: '/',
+    handler(request, reply) {
+      reply('ok');
+    }
+  });
+
+  await server.register({
+    register: hapiReferrer
+  });
+
+  await server.start();
+
+  const { res } = await wreck.get('http://localhost:8000/', {
+    headers: {
+      cookie: 'ref=;;'
+    }
+  });
+  const cookie = res.headers['set-cookie'] || [];
+  code.expect(cookie.length).to.equal(1);
+});
+
+lab.test('direct with null cookie', async () => {
+  server.route({
+    method: 'GET',
+    path: '/',
+    handler(request, reply) {
+      reply('ok');
+    }
+  });
+
+  await server.register({
+    register: hapiReferrer
+  });
+
+  await server.start();
+
+  const { res } = await wreck.get('http://localhost:8000/', {
+    headers: {
+      cookie: null
+    }
+  });
   const cookie = res.headers['set-cookie'] || [];
   code.expect(cookie.length).to.equal(1);
 });
