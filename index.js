@@ -13,6 +13,10 @@ exports.register = (server, options, next) => {
   options = Object.assign({}, defaults, options);
 
   server.ext('onPreHandler', (request, reply) => {
+    if (request.method !== 'get') {
+      return reply.continue();
+    }
+
     let currentCookie = '';
 
     if (request.state) {

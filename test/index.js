@@ -6,10 +6,11 @@ const code = require('code');
 const lab = exports.lab = require('lab').script();
 const wreck = require('wreck');
 const hapiReferrer = require('../index.js');
+const Path = require('path');
 
 let server;
 
-lab.beforeEach(() => {
+lab.beforeEach(async () => {
   server = new Hapi.Server();
 
   server.connection({
@@ -19,7 +20,24 @@ lab.beforeEach(() => {
       state: {
         failAction: 'ignore'
       },
-      log: false
+      log: false,
+      files: {
+        relativeTo: Path.join(__dirname, 'public')
+      }
+    }
+  });
+
+  await server.register(require('inert'));
+
+  server.route({
+    method: 'GET',
+    path: '/{param*}',
+    handler: {
+      directory: {
+        path: '.',
+        redirectToSlash: true,
+        index: true
+      }
     }
   });
 });
@@ -92,6 +110,48 @@ lab.test('direct with null cookie', async () => {
   });
   const cookie = res.headers['set-cookie'] || [];
   code.expect(cookie.length).to.equal(1);
+});
+
+lab.test('works with assets', async () => {
+  server.route({
+    method: 'GET',
+    path: '/',
+    handler(request, reply) {
+      reply('ok');
+    }
+  });
+
+  await server.register({
+    register: hapiReferrer
+  });
+
+  await server.start();
+
+  const { res } = await wreck.get('http://localhost:8000/favicon.ico');
+
+  const cookie = res.headers['set-cookie'] || [];
+  code.expect(cookie.length).to.equal(1);
+});
+
+lab.test('skips non get requests', async () => {
+  server.route({
+    method: 'POST',
+    path: '/',
+    handler(request, reply) {
+      reply('ok');
+    }
+  });
+
+  await server.register({
+    register: hapiReferrer
+  });
+
+  await server.start();
+
+  const { res } = await wreck.post('http://localhost:8000');
+
+  const cookie = res.headers['set-cookie'] || [];
+  code.expect(cookie.length).to.equal(0);
 });
 
 lab.test('referrer set', async () => {
