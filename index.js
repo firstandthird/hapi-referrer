@@ -12,8 +12,16 @@ const defaults = {
 exports.register = (server, options, next) => {
   options = Object.assign({}, defaults, options);
 
-  server.ext('onPreResponse', (request, reply) => {
-    const currentCookie = request.state[options.cookieName] || '';
+  server.ext('onPreHandler', (request, reply) => {
+    if (request.method !== 'get') {
+      return reply.continue();
+    }
+
+    let currentCookie = '';
+
+    if (request.state) {
+      currentCookie = request.state[options.cookieName] || '';
+    }
 
     if (currentCookie.length) {
       return reply.continue();
