@@ -79,7 +79,7 @@ exports.register = (server, options, next) => {
       const cookieValue = `${refString.join('-')}||${Date.now()}||${encodeURIComponent(request.info.referrer)}`;
 
       if (options.verbose) {
-        server.log(['hapi-referer', 'set-cookie', 'info'], {
+        server.log(['hapi-referrer', 'set-cookie', 'info'], {
           cookieName: options.cookieName,
           cookieValue,
           ttl: options.ttl
