@@ -377,5 +377,5 @@ lab.test('verbose mode logs when cookie set', async () => {
     }
   });
 
-  code.expect(log.tags).to.equal(['hapi-referer', 'set-cookie', 'info']);
+  code.expect(log.tags).to.equal(['hapi-referrer', 'set-cookie', 'info']);
 });
