@@ -1,10 +1,9 @@
-const inbound = require('inbound');
+const RefParser = require('referer-parser');
 
 const defaults = {
   cookieName: 'ref',
   ttl: 30 * 86400000, // 30 days
   domains: [],
-  inboundKeys: ['engine', 'network', 'site', 'from', 'client'],
   decorationName: 'getOriginalReferrer',
   verbose: false
 };
@@ -33,68 +32,47 @@ exports.register = (server, options, next) => {
       return reply.continue();
     }
 
-    inbound.referrer.parse(request.url, request.info.referrer, (err, data) => {
-      // $lab:coverage:off$
-      if (err) {
-        server.log(['hapi-referrer', 'error'], err);
-        return reply.continue();
-      }
-      // $lab:coverage:on$
+    const reqUri = `${request.headers['x-forwarded-proto'] || request.connection.info.protocol}://${request.info.host}${request.url.path}`;
 
-      // $lab:coverage:off$
-      if (typeof data !== 'object' || typeof data.referrer !== 'object') {
-        server.log(['hapi-referrer', 'info'], {
-          message: 'referrer didn\'t return an object',
-          url: request.url,
-          ref: request.info.referrer
-        });
+    const data = new RefParser(request.info.referrer, reqUri);
 
-        return reply.continue();
-      }
-      // $lab:coverage:on$
+    if (data.medium === 'internal') {
+      return reply.continue();
+    }
 
-      data = data.referrer;
+    const refString = [];
 
-      if (data.type === 'unknown') {
-        server.log(['hapi-referrer', 'info'], {
-          message: 'unknown referrer',
-          url: request.url,
-          ref: request.info.referrer,
-          data
-        });
+    if (data.medium !== 'unknown') {
+      refString.push(data.medium);
+    }
 
-        return reply.continue();
-      }
+    if (data.referer) {
+      refString.push(data.referer);
+    }
 
-      const refString = [];
+    if (data.medium === 'unknown' && !data.referer) {
+      refString.push('direct');
+    }
 
-      refString.push(data.type);
+    const cookieValue = `${encodeURIComponent(refString.join(' - '))}||${Date.now()}||${encodeURIComponent(request.info.referrer)}||${encodeURIComponent(reqUri)}`;
 
-      options.inboundKeys.forEach(key => {
-        if (typeof data[key] !== 'undefined') {
-          refString.push(data[key]);
-        }
+    if (options.verbose) {
+      server.log(['hapi-referrer', 'set-cookie', 'info'], {
+        referrer: request.info.referrer,
+        url: reqUri,
+        type: refString.join(' - '),
+        ua: request.headers['user-agent']
       });
+    }
 
-      const cookieValue = `${refString.join('-')}||${Date.now()}||${encodeURIComponent(request.info.referrer)}`;
-
-      if (options.verbose) {
-        server.log(['hapi-referrer', 'set-cookie', 'info'], {
-          cookieName: options.cookieName,
-          cookieValue,
-          ttl: options.ttl
-        });
-      }
-
-      reply.state(options.cookieName, cookieValue, {
-        path: '/',
-        ttl: options.ttl,
-        clearInvalid: true,
-        ignoreErrors: true
-      });
-
-      reply.continue();
+    reply.state(options.cookieName, cookieValue, {
+      path: '/',
+      ttl: options.ttl,
+      clearInvalid: true,
+      ignoreErrors: true
     });
+
+    reply.continue();
   });
 
   function getOriginalReferrer() {
@@ -104,9 +82,9 @@ exports.register = (server, options, next) => {
       return {};
     }
 
-    const [referer, timestamp, uri] = currentCookie.split('||');
+    const [medium, timestamp, referrer, uri] = currentCookie.split('||');
 
-    return { referer, timestamp, uri: decodeURIComponent(uri) };
+    return { medium: decodeURIComponent(medium), timestamp, referrer: decodeURIComponent(referrer), uri: decodeURIComponent(uri) };
   }
 
   server.decorate('request', options.decorationName, getOriginalReferrer);
