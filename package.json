@@ -27,8 +27,7 @@
   },
   "homepage": "https://github.com/firstandthird/hapi-referrer#readme",
   "dependencies": {
-    "referer-parser": "0.0.3",
-    "s-inbound": "github:PureClarity/inbound"
+    "referer-parser": "0.0.3"
   },
   "devDependencies": {
     "code": "^5.1.2",
