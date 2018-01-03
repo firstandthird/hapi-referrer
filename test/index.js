@@ -110,6 +110,7 @@ lab.test('direct with null cookie', async () => {
   });
   const cookie = res.headers['set-cookie'] || [];
   code.expect(cookie.length).to.equal(1);
+  code.expect(cookie[0]).to.include('ref=direct');
 });
 
 lab.test('works with assets', async () => {
@@ -203,6 +204,7 @@ lab.test('empty referrer set', async () => {
   // Treated as direct visit
   const cookie = res.headers['set-cookie'] || [];
   code.expect(cookie.length).to.equal(1);
+  code.expect(cookie[0]).to.include('ref=direct');
 });
 
 lab.test('bad referrer set', async () => {
@@ -225,10 +227,34 @@ lab.test('bad referrer set', async () => {
       referrer: '111111111'
     }
   });
-  // Treated as direct visit
-  // Not sure of a better way
   const cookie = res.headers['set-cookie'] || [];
   code.expect(cookie.length).to.equal(1);
+  code.expect(cookie[0]).to.include('ref=link');
+});
+
+lab.test('unknown referrer', async () => {
+  server.route({
+    method: 'GET',
+    path: '/',
+    handler(request, reply) {
+      reply('ok');
+    }
+  });
+
+  await server.register({
+    register: hapiReferrer
+  });
+
+  await server.start();
+
+  const { res } = await wreck.get('http://localhost:8000/', {
+    headers: {
+      referrer: 'http://swine.chat/'
+    }
+  });
+  const cookie = res.headers['set-cookie'] || [];
+  code.expect(cookie.length).to.equal(1);
+  code.expect(cookie[0]).to.include('ref=link');
 });
 
 lab.test('internal ref', async () => {
@@ -439,5 +465,5 @@ lab.test('verbose mode logs when cookie set', async () => {
     url: 'http://localhost:8000/',
     type: 'search - Google',
     ua: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36'
-  })
+  });
 });

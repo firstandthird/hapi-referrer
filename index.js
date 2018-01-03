@@ -50,8 +50,13 @@ exports.register = (server, options, next) => {
       refString.push(data.referer);
     }
 
+    // if unknown - Check if direct or linked
     if (data.medium === 'unknown' && !data.referer) {
-      refString.push('direct');
+      if (request.info.referrer.length) {
+        refString.push('link');
+      } else {
+        refString.push('direct');
+      }
     }
 
     const cookieValue = `${encodeURIComponent(refString.join(' - '))}||${Date.now()}||${encodeURIComponent(request.info.referrer)}||${encodeURIComponent(reqUri)}`;
