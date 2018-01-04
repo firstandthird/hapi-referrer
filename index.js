@@ -11,16 +11,19 @@ const defaults = {
 exports.register = (server, options, next) => {
   options = Object.assign({}, defaults, options);
 
-  server.ext('onPreHandler', (request, reply) => {
-    if (request.method !== 'get') {
+  server.ext('onPostHandler', (request, reply) => {
+    if (request.method !== 'get' || request.response.variety !== 'view') {
       return reply.continue();
     }
 
     let currentCookie = '';
 
+    /* $lab:coverage:off$ */
+    // hapi issue? can't reproduce in tests
     if (request.state) {
       currentCookie = request.state[options.cookieName] || '';
     }
+    /* $lab:coverage:on$ */
 
     if (currentCookie.length) {
       return reply.continue();

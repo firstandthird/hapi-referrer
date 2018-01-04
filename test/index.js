@@ -28,6 +28,15 @@ lab.beforeEach(async () => {
   });
 
   await server.register(require('inert'));
+  await server.register(require('vision'));
+
+  server.views({
+    engines: {
+      html: require('handlebars')
+    },
+    relativeTo: __dirname,
+    path: 'public'
+  });
 
   server.route({
     method: 'GET',
@@ -49,7 +58,7 @@ lab.test('direct visits', async () => {
     method: 'GET',
     path: '/',
     handler(request, reply) {
-      reply('ok');
+      reply.view('index');
     }
   });
 
@@ -69,7 +78,7 @@ lab.test('direct with invalid cookies', async () => {
     method: 'GET',
     path: '/',
     handler(request, reply) {
-      reply('ok');
+      reply.view('index');
     }
   });
 
@@ -93,7 +102,7 @@ lab.test('direct with null cookie', async () => {
     method: 'GET',
     path: '/',
     handler(request, reply) {
-      reply('ok');
+      reply.view('index');
     }
   });
 
@@ -113,12 +122,12 @@ lab.test('direct with null cookie', async () => {
   code.expect(cookie[0]).to.include('ref=direct');
 });
 
-lab.test('works with assets', async () => {
+lab.test('ignores non views', async () => {
   server.route({
     method: 'GET',
     path: '/',
     handler(request, reply) {
-      reply('ok');
+      reply.view('index');
     }
   });
 
@@ -131,7 +140,7 @@ lab.test('works with assets', async () => {
   const { res } = await wreck.get('http://localhost:8000/favicon.ico');
 
   const cookie = res.headers['set-cookie'] || [];
-  code.expect(cookie.length).to.equal(1);
+  code.expect(cookie.length).to.equal(0);
 });
 
 lab.test('skips non get requests', async () => {
@@ -139,7 +148,7 @@ lab.test('skips non get requests', async () => {
     method: 'POST',
     path: '/',
     handler(request, reply) {
-      reply('ok');
+      reply.view('index');
     }
   });
 
@@ -160,7 +169,7 @@ lab.test('referrer set', async () => {
     method: 'GET',
     path: '/',
     handler(request, reply) {
-      reply('ok');
+      reply.view('index');
     }
   });
 
@@ -185,7 +194,7 @@ lab.test('empty referrer set', async () => {
     method: 'GET',
     path: '/',
     handler(request, reply) {
-      reply('ok');
+      reply.view('index');
     }
   });
 
@@ -212,7 +221,7 @@ lab.test('bad referrer set', async () => {
     method: 'GET',
     path: '/',
     handler(request, reply) {
-      reply('ok');
+      reply.view('index');
     }
   });
 
@@ -237,7 +246,7 @@ lab.test('unknown referrer', async () => {
     method: 'GET',
     path: '/',
     handler(request, reply) {
-      reply('ok');
+      reply.view('index');
     }
   });
 
@@ -262,7 +271,7 @@ lab.test('internal ref', async () => {
     method: 'GET',
     path: '/',
     handler(request, reply) {
-      reply('ok');
+      reply.view('index');
     }
   });
 
@@ -287,7 +296,7 @@ lab.test('x-forwarded-proto', async () => {
     method: 'GET',
     path: '/',
     handler(request, reply) {
-      reply('ok');
+      reply.view('index');
     }
   });
 
@@ -313,7 +322,7 @@ lab.test('dont re-set cookie if set', async () => {
     method: 'GET',
     path: '/',
     handler(request, reply) {
-      reply('ok');
+      reply.view('index');
     }
   });
 
@@ -338,7 +347,7 @@ lab.test('dont set cookie if domain blacklisted', async () => {
     method: 'GET',
     path: '/',
     handler(request, reply) {
-      reply('ok');
+      reply.view('index');
     }
   });
 
@@ -376,7 +385,7 @@ lab.test('decorate request with getOriginalReferrer', async () => {
     path: '/',
     handler(request, reply) {
       ref = request.getOriginalReferrer();
-      reply('ok');
+      reply.view('index');
     }
   });
 
@@ -411,7 +420,7 @@ lab.test('decorate request with getOriginalReferrer - no ref', async () => {
     path: '/',
     handler(request, reply) {
       ref = request.getOriginalReferrer();
-      reply('ok');
+      reply.view('index');
     }
   });
 
@@ -434,7 +443,7 @@ lab.test('verbose mode logs when cookie set', async () => {
     method: 'GET',
     path: '/',
     handler(request, reply) {
-      reply('ok');
+      reply.view('index');
     }
   });
 
