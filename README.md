@@ -6,4 +6,5 @@ Hapi plugin to log referrers from search/ads/social/etc
  - `cookieName` - Name of the cookie to be set
  - `ttl` - cookie expiration, defaults to 30 days
  - `domains` - array of domains. Domains in the list will not have their referrer set
+ - `ignoredPaths` - array of paths. Paths set here wont have cookies set. Note, applies to all paths matching the text. Example: `/public` would also block `/public/css/common.css`
  - `verbose` - Enable debug logging when cookie set

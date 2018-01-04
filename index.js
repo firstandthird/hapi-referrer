@@ -4,6 +4,7 @@ const defaults = {
   cookieName: 'ref',
   ttl: 30 * 86400000, // 30 days
   domains: [],
+  ignoredPaths: [],
   decorationName: 'getOriginalReferrer',
   verbose: false
 };
@@ -11,28 +12,36 @@ const defaults = {
 exports.register = (server, options, next) => {
   options = Object.assign({}, defaults, options);
 
+  if (!options.ignoredPaths.includes('favicon.ico')) {
+    options.ignoredPaths.push('favicon.ico');
+  }
+
   server.ext('onPreHandler', (request, reply) => {
     if (request.method !== 'get') {
       return reply.continue();
     }
 
+    const reqUri = `${request.headers['x-forwarded-proto'] || request.connection.info.protocol}://${request.info.host}${request.url.path}`;
+
     let currentCookie = '';
 
+    /* $lab:coverage:off$ */
+    // hapi issue? can't reproduce in tests
     if (request.state) {
       currentCookie = request.state[options.cookieName] || '';
     }
+    /* $lab:coverage:on$ */
 
     if (currentCookie.length) {
       return reply.continue();
     }
 
-    const blacklisted = options.domains.find(item => request.info.referrer.indexOf(item) !== -1);
+    const blacklistedDomain = options.domains.find(item => request.info.referrer.indexOf(item) !== -1);
+    const blacklistedPath = options.ignoredPaths.find(item => request.url.path.indexOf(item) !== -1);
 
-    if (blacklisted) {
+    if (blacklistedDomain || blacklistedPath) {
       return reply.continue();
     }
-
-    const reqUri = `${request.headers['x-forwarded-proto'] || request.connection.info.protocol}://${request.info.host}${request.url.path}`;
 
     const data = new RefParser(request.info.referrer, reqUri);
 
