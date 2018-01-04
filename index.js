@@ -4,7 +4,7 @@ const defaults = {
   cookieName: 'ref',
   ttl: 30 * 86400000, // 30 days
   domains: [],
-  paths: [],
+  ignoredPaths: [],
   decorationName: 'getOriginalReferrer',
   verbose: false
 };
@@ -12,8 +12,8 @@ const defaults = {
 exports.register = (server, options, next) => {
   options = Object.assign({}, defaults, options);
 
-  if (!options.paths.includes('favicon.ico')) {
-    options.paths.push('favicon.ico');
+  if (!options.ignoredPaths.includes('favicon.ico')) {
+    options.ignoredPaths.push('favicon.ico');
   }
 
   server.ext('onPreHandler', (request, reply) => {
@@ -37,7 +37,7 @@ exports.register = (server, options, next) => {
     }
 
     const blacklistedDomain = options.domains.find(item => request.info.referrer.indexOf(item) !== -1);
-    const blacklistedPath = options.paths.find(item => request.url.path.indexOf(item) !== -1);
+    const blacklistedPath = options.ignoredPaths.find(item => request.url.path.indexOf(item) !== -1);
 
     if (blacklistedDomain || blacklistedPath) {
       return reply.continue();

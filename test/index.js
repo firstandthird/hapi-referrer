@@ -155,7 +155,7 @@ lab.test('ignores blacklisted paths', async () => {
   await server.register({
     register: hapiReferrer,
     options: {
-      paths: [
+      ignoredPaths: [
         '/public'
       ]
     }
