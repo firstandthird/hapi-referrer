@@ -4,6 +4,7 @@ const defaults = {
   cookieName: 'ref',
   ttl: 30 * 86400000, // 30 days
   domains: [],
+  paths: [],
   decorationName: 'getOriginalReferrer',
   verbose: false
 };
@@ -11,10 +12,16 @@ const defaults = {
 exports.register = (server, options, next) => {
   options = Object.assign({}, defaults, options);
 
-  server.ext('onPostHandler', (request, reply) => {
-    if (request.method !== 'get' || request.response.variety !== 'view') {
+  if (!options.paths.includes('favicon.ico')) {
+    options.paths.push('favicon.ico');
+  }
+
+  server.ext('onPreHandler', (request, reply) => {
+    if (request.method !== 'get') {
       return reply.continue();
     }
+
+    const reqUri = `${request.headers['x-forwarded-proto'] || request.connection.info.protocol}://${request.info.host}${request.url.path}`;
 
     let currentCookie = '';
 
@@ -29,13 +36,12 @@ exports.register = (server, options, next) => {
       return reply.continue();
     }
 
-    const blacklisted = options.domains.find(item => request.info.referrer.indexOf(item) !== -1);
+    const blacklistedDomain = options.domains.find(item => request.info.referrer.indexOf(item) !== -1);
+    const blacklistedPath = options.paths.find(item => request.url.path.indexOf(item) !== -1);
 
-    if (blacklisted) {
+    if (blacklistedDomain || blacklistedPath) {
       return reply.continue();
     }
-
-    const reqUri = `${request.headers['x-forwarded-proto'] || request.connection.info.protocol}://${request.info.host}${request.url.path}`;
 
     const data = new RefParser(request.info.referrer, reqUri);
 

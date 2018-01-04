@@ -122,7 +122,7 @@ lab.test('direct with null cookie', async () => {
   code.expect(cookie[0]).to.include('ref=direct');
 });
 
-lab.test('ignores non views', async () => {
+lab.test('ignores favicons', async () => {
   server.route({
     method: 'GET',
     path: '/',
@@ -138,6 +138,32 @@ lab.test('ignores non views', async () => {
   await server.start();
 
   const { res } = await wreck.get('http://localhost:8000/favicon.ico');
+
+  const cookie = res.headers['set-cookie'] || [];
+  code.expect(cookie.length).to.equal(0);
+});
+
+lab.test('ignores blacklisted paths', async () => {
+  server.route({
+    method: 'GET',
+    path: '/public/images/image.jpg',
+    handler(request, reply) {
+      reply('file');
+    }
+  });
+
+  await server.register({
+    register: hapiReferrer,
+    options: {
+      paths: [
+        '/public'
+      ]
+    }
+  });
+
+  await server.start();
+
+  const { res } = await wreck.get('http://localhost:8000/public/images/image.jpg');
 
   const cookie = res.headers['set-cookie'] || [];
   code.expect(cookie.length).to.equal(0);
