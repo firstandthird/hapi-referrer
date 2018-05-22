@@ -11,16 +11,12 @@ const Path = require('path');
 let server;
 
 lab.beforeEach(async () => {
-  server = new Hapi.Server();
-
-  server.connection({
-    host: 'localhost',
+  server = new Hapi.Server({
     port: 8000,
     routes: {
       state: {
         failAction: 'ignore'
       },
-      log: false,
       files: {
         relativeTo: Path.join(__dirname, 'public')
       }
@@ -57,14 +53,12 @@ lab.test('direct visits', async () => {
   server.route({
     method: 'GET',
     path: '/',
-    handler(request, reply) {
-      reply.view('index');
+    handler(request, h) {
+      return h.view('index');
     }
   });
 
-  await server.register({
-    register: hapiReferrer
-  });
+  await server.register(hapiReferrer);
 
   await server.start();
 
@@ -77,14 +71,12 @@ lab.test('direct with invalid cookies', async () => {
   server.route({
     method: 'GET',
     path: '/',
-    handler(request, reply) {
-      reply.view('index');
+    handler(request, h) {
+      return h.view('index');
     }
   });
 
-  await server.register({
-    register: hapiReferrer
-  });
+  await server.register(hapiReferrer);
 
   await server.start();
 
@@ -101,14 +93,12 @@ lab.test('direct with null cookie', async () => {
   server.route({
     method: 'GET',
     path: '/',
-    handler(request, reply) {
-      reply.view('index');
+    handler(request, h) {
+      return h.view('index');
     }
   });
 
-  await server.register({
-    register: hapiReferrer
-  });
+  await server.register(hapiReferrer);
 
   await server.start();
 
@@ -126,14 +116,12 @@ lab.test('ignores favicons', async () => {
   server.route({
     method: 'GET',
     path: '/',
-    handler(request, reply) {
-      reply.view('index');
+    handler(request, h) {
+      return h.view('index');
     }
   });
 
-  await server.register({
-    register: hapiReferrer
-  });
+  await server.register(hapiReferrer);
 
   await server.start();
 
@@ -147,13 +135,13 @@ lab.test('ignores blacklisted paths', async () => {
   server.route({
     method: 'GET',
     path: '/public/images/image.jpg',
-    handler(request, reply) {
-      reply('file');
+    handler(request, h) {
+      return 'file';
     }
   });
 
   await server.register({
-    register: hapiReferrer,
+    plugin: hapiReferrer,
     options: {
       ignoredPaths: [
         '/public'
@@ -173,14 +161,12 @@ lab.test('skips non get requests', async () => {
   server.route({
     method: 'POST',
     path: '/',
-    handler(request, reply) {
-      reply.view('index');
+    handler(request, h) {
+      return h.view('index');
     }
   });
 
-  await server.register({
-    register: hapiReferrer
-  });
+  await server.register(hapiReferrer);
 
   await server.start();
 
@@ -194,14 +180,12 @@ lab.test('referrer set', async () => {
   server.route({
     method: 'GET',
     path: '/',
-    handler(request, reply) {
-      reply.view('index');
+    handler(request, h) {
+      return h.view('index');
     }
   });
 
-  await server.register({
-    register: hapiReferrer
-  });
+  await server.register(hapiReferrer);
 
   await server.start();
 
@@ -219,14 +203,12 @@ lab.test('empty referrer set', async () => {
   server.route({
     method: 'GET',
     path: '/',
-    handler(request, reply) {
-      reply.view('index');
+    handler(request, h) {
+      return h.view('index');
     }
   });
 
-  await server.register({
-    register: hapiReferrer
-  });
+  await server.register(hapiReferrer);
 
   await server.start();
 
@@ -246,14 +228,12 @@ lab.test('bad referrer set', async () => {
   server.route({
     method: 'GET',
     path: '/',
-    handler(request, reply) {
-      reply.view('index');
+    handler(request, h) {
+      return h.view('index');
     }
   });
 
-  await server.register({
-    register: hapiReferrer
-  });
+  await server.register(hapiReferrer);
 
   await server.start();
 
@@ -271,14 +251,12 @@ lab.test('unknown referrer', async () => {
   server.route({
     method: 'GET',
     path: '/',
-    handler(request, reply) {
-      reply.view('index');
+    handler(request, h) {
+      return h.view('index');
     }
   });
 
-  await server.register({
-    register: hapiReferrer
-  });
+  await server.register(hapiReferrer);
 
   await server.start();
 
@@ -296,14 +274,12 @@ lab.test('internal ref', async () => {
   server.route({
     method: 'GET',
     path: '/',
-    handler(request, reply) {
-      reply.view('index');
+    handler(request, h) {
+      return h.view('index');
     }
   });
 
-  await server.register({
-    register: hapiReferrer
-  });
+  await server.register(hapiReferrer);
 
   await server.start();
 
@@ -321,14 +297,12 @@ lab.test('x-forwarded-proto', async () => {
   server.route({
     method: 'GET',
     path: '/',
-    handler(request, reply) {
-      reply.view('index');
+    handler(request, h) {
+      return h.view('index');
     }
   });
 
-  await server.register({
-    register: hapiReferrer
-  });
+  await server.register(hapiReferrer);
 
   await server.start();
 
@@ -347,14 +321,12 @@ lab.test('dont re-set cookie if set', async () => {
   server.route({
     method: 'GET',
     path: '/',
-    handler(request, reply) {
-      reply.view('index');
+    handler(request, h) {
+      return h.view('index');
     }
   });
 
-  await server.register({
-    register: hapiReferrer
-  });
+  await server.register(hapiReferrer);
 
   await server.start();
 
@@ -372,13 +344,13 @@ lab.test('dont set cookie if domain blacklisted', async () => {
   server.route({
     method: 'GET',
     path: '/',
-    handler(request, reply) {
-      reply.view('index');
+    handler(request, h) {
+      return h.view('index');
     }
   });
 
   await server.register({
-    register: hapiReferrer,
+    plugin: hapiReferrer,
     options: {
       domains: ['www.facebook.com']
     }
@@ -409,15 +381,13 @@ lab.test('decorate request with getOriginalReferrer', async () => {
   server.route({
     method: 'GET',
     path: '/',
-    handler(request, reply) {
+    handler(request, h) {
       ref = request.getOriginalReferrer();
-      reply.view('index');
+      return h.view('index');
     }
   });
 
-  await server.register({
-    register: hapiReferrer
-  });
+  await server.register(hapiReferrer);
 
   await server.start();
 
@@ -444,15 +414,13 @@ lab.test('decorate request with getOriginalReferrer - no ref', async () => {
   server.route({
     method: 'GET',
     path: '/',
-    handler(request, reply) {
+    handler(request, h) {
       ref = request.getOriginalReferrer();
-      reply.view('index');
+      return h.view('index');
     }
   });
 
-  await server.register({
-    register: hapiReferrer
-  });
+  await server.register(hapiReferrer);
 
   await server.start();
 
@@ -468,13 +436,13 @@ lab.test('verbose mode logs when cookie set', async () => {
   server.route({
     method: 'GET',
     path: '/',
-    handler(request, reply) {
-      reply.view('index');
+    handler(request, h) {
+      return h.view('index');
     }
   });
 
   await server.register({
-    register: hapiReferrer,
+    plugin: hapiReferrer,
     options: {
       verbose: true
     }
@@ -482,7 +450,7 @@ lab.test('verbose mode logs when cookie set', async () => {
 
   await server.start();
 
-  server.on('log', l => {
+  server.events.on('log', l => {
     log = l;
   });
 
@@ -496,6 +464,46 @@ lab.test('verbose mode logs when cookie set', async () => {
   code.expect(log.tags).to.equal(['hapi-referrer', 'set-cookie', 'info']);
 
   code.expect(log.data).to.equal({
+    referrer: 'https://www.google.co.uk/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CEgQFjAB&url=https%3A%2F%2Fwww.datanitro.com%2F&ei=02ImUK--C6KX1AWbpIDICg&usg=AFQjCNHOS6IopwZTOOXX-temg3t9jph8SQ&sig2=tzL6mJCTxRdYnOxnc3Dl5A',
+    url: 'http://localhost:8000/',
+    type: 'search - Google',
+    ua: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36'
+  });
+});
+
+lab.test('emits referrer event', async () => {
+  let log;
+
+  server.route({
+    method: 'GET',
+    path: '/',
+    handler(request, h) {
+      return h.view('index');
+    }
+  });
+
+  await server.register({
+    plugin: hapiReferrer,
+    options: {
+      verbose: true
+    }
+  });
+
+  await server.start();
+
+  server.events.on('referrer', l => {
+    log = l;
+  });
+
+  await wreck.get('http://localhost:8000/', {
+    headers: {
+      'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
+      referrer: 'https://www.google.co.uk/url?sa\u003dt\u0026rct\u003dj\u0026q\u003d\u0026esrc\u003ds\u0026source\u003dweb\u0026cd\u003d2\u0026ved\u003d0CEgQFjAB\u0026url\u003dhttps%3A%2F%2Fwww.datanitro.com%2F\u0026ei\u003d02ImUK--C6KX1AWbpIDICg\u0026usg\u003dAFQjCNHOS6IopwZTOOXX-temg3t9jph8SQ\u0026sig2\u003dtzL6mJCTxRdYnOxnc3Dl5A'
+    }
+  });
+
+  code.expect(log.request).to.exist();
+  code.expect(log.refInfo).to.equal({
     referrer: 'https://www.google.co.uk/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CEgQFjAB&url=https%3A%2F%2Fwww.datanitro.com%2F&ei=02ImUK--C6KX1AWbpIDICg&usg=AFQjCNHOS6IopwZTOOXX-temg3t9jph8SQ&sig2=tzL6mJCTxRdYnOxnc3Dl5A',
     url: 'http://localhost:8000/',
     type: 'search - Google',

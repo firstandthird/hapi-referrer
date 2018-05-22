@@ -9,19 +9,20 @@ const defaults = {
   verbose: false
 };
 
-exports.register = (server, options, next) => {
+const register = (server, options) => {
   options = Object.assign({}, defaults, options);
+  server.event('referrer');
 
   if (!options.ignoredPaths.includes('favicon.ico')) {
     options.ignoredPaths.push('favicon.ico');
   }
 
-  server.ext('onPreHandler', (request, reply) => {
+  server.ext('onPreHandler', (request, h) => {
     if (request.method !== 'get') {
-      return reply.continue();
+      return h.continue;
     }
 
-    const reqUri = `${request.headers['x-forwarded-proto'] || request.connection.info.protocol}://${request.info.host}${request.url.path}`;
+    const reqUri = `${request.headers['x-forwarded-proto'] || request.server.info.protocol}://${request.info.host}${request.url.path}`;
 
     let currentCookie = '';
 
@@ -33,20 +34,20 @@ exports.register = (server, options, next) => {
     /* $lab:coverage:on$ */
 
     if (currentCookie.length) {
-      return reply.continue();
+      return h.continue;
     }
 
     const blacklistedDomain = options.domains.find(item => request.info.referrer.indexOf(item) !== -1);
     const blacklistedPath = options.ignoredPaths.find(item => request.url.path.indexOf(item) !== -1);
 
     if (blacklistedDomain || blacklistedPath) {
-      return reply.continue();
+      return h.continue;
     }
 
     const data = new RefParser(request.info.referrer, reqUri);
 
     if (data.medium === 'internal') {
-      return reply.continue();
+      return h.continue;
     }
 
     const refString = [];
@@ -70,23 +71,27 @@ exports.register = (server, options, next) => {
 
     const cookieValue = `${encodeURIComponent(refString.join(' - '))}||${Date.now()}||${encodeURIComponent(request.info.referrer)}||${encodeURIComponent(reqUri)}`;
 
+    const refInfo = {
+      referrer: request.info.referrer,
+      url: reqUri,
+      type: refString.join(' - '),
+      ua: request.headers['user-agent']
+    };
+
     if (options.verbose) {
-      server.log(['hapi-referrer', 'set-cookie', 'info'], {
-        referrer: request.info.referrer,
-        url: reqUri,
-        type: refString.join(' - '),
-        ua: request.headers['user-agent']
-      });
+      server.log(['hapi-referrer', 'set-cookie', 'info'], refInfo);
     }
 
-    reply.state(options.cookieName, cookieValue, {
+    h.state(options.cookieName, cookieValue, {
       path: '/',
       ttl: options.ttl,
       clearInvalid: true,
       ignoreErrors: true
     });
 
-    reply.continue();
+    server.events.emit('referrer', { request, refInfo });
+
+    return h.continue;
   });
 
   function getOriginalReferrer() {
@@ -102,10 +107,10 @@ exports.register = (server, options, next) => {
   }
 
   server.decorate('request', options.decorationName, getOriginalReferrer);
-
-  next();
 };
 
-exports.register.attributes = {
-  pkg: require('./package.json')
+exports.plugin = {
+  once: true,
+  pkg: require('./package.json'),
+  register
 };
