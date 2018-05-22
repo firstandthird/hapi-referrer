@@ -41,6 +41,7 @@ const register = (server, options) => {
     /* $lab:coverage:on$ */
 
     if (currentCookie.length) {
+      server.events.emit('referrer', { request, refInfo: request[options.decorationName]() });
       return h.continue;
     }
 
@@ -75,18 +76,21 @@ const register = (server, options) => {
         refString.push('direct');
       }
     }
+    const ts = Date.now();
 
-    const cookieValue = `${encodeURIComponent(refString.join(' - '))}||${Date.now()}||${encodeURIComponent(request.info.referrer)}||${encodeURIComponent(reqUri)}`;
+    const cookieValue = `${encodeURIComponent(refString.join(' - '))}||${ts}||${encodeURIComponent(request.info.referrer)}||${encodeURIComponent(reqUri)}`;
 
     const refInfo = {
+      medium: refString.join(' - '),
       referrer: request.info.referrer,
-      url: reqUri,
-      type: refString.join(' - '),
-      ua: request.headers['user-agent']
+      uri: reqUri
     };
 
     if (options.verbose) {
-      server.log(['hapi-referrer', 'set-cookie', 'info'], refInfo);
+      server.log(['hapi-referrer', 'set-cookie', 'info'], {
+        refInfo,
+        ua: request.headers['user-agent']
+      });
     }
 
     h.state(options.cookieName, cookieValue, {
@@ -96,7 +100,10 @@ const register = (server, options) => {
       ignoreErrors: true
     });
 
-    server.events.emit('referrer', { request, refInfo });
+    server.events.emit('referrer', {
+      request,
+      refInfo
+    });
 
     return h.continue;
   });
@@ -110,7 +117,11 @@ const register = (server, options) => {
 
     const [medium, timestamp, referrer, uri] = currentCookie.split('||');
 
-    return { medium: decodeURIComponent(medium), timestamp, referrer: decodeURIComponent(referrer), uri: decodeURIComponent(uri) };
+    return {
+      medium: decodeURIComponent(medium),
+      timestamp,
+      referrer: decodeURIComponent(referrer),
+      uri: decodeURIComponent(uri) };
   }
 
   server.decorate('request', options.decorationName, getOriginalReferrer);

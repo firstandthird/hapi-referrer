@@ -506,16 +506,16 @@ lab.test('verbose mode logs when cookie set', async () => {
   code.expect(log.tags).to.equal(['hapi-referrer', 'set-cookie', 'info']);
 
   code.expect(log.data).to.equal({
-    referrer: 'https://www.google.co.uk/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CEgQFjAB&url=https%3A%2F%2Fwww.datanitro.com%2F&ei=02ImUK--C6KX1AWbpIDICg&usg=AFQjCNHOS6IopwZTOOXX-temg3t9jph8SQ&sig2=tzL6mJCTxRdYnOxnc3Dl5A',
-    url: 'http://localhost:8000/',
-    type: 'search - Google',
+    refInfo: {
+      referrer: 'https://www.google.co.uk/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CEgQFjAB&url=https%3A%2F%2Fwww.datanitro.com%2F&ei=02ImUK--C6KX1AWbpIDICg&usg=AFQjCNHOS6IopwZTOOXX-temg3t9jph8SQ&sig2=tzL6mJCTxRdYnOxnc3Dl5A',
+      uri: 'http://localhost:8000/',
+      medium: 'search - Google'
+    },
     ua: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36'
   });
 });
 
 lab.test('emits referrer event', async () => {
-  let log;
-
   server.route({
     method: 'GET',
     path: '/',
@@ -533,8 +533,9 @@ lab.test('emits referrer event', async () => {
 
   await server.start();
 
-  server.events.on('referrer', l => {
-    log = l;
+  let evt = null;
+  server.events.on('referrer', data => {
+    evt = data;
   });
 
   await wreck.get('http://localhost:8000/', {
@@ -544,11 +545,51 @@ lab.test('emits referrer event', async () => {
     }
   });
 
-  code.expect(log.request).to.exist();
-  code.expect(log.refInfo).to.equal({
+  code.expect(evt.request).to.exist();
+  code.expect(evt.refInfo).to.equal({
     referrer: 'https://www.google.co.uk/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CEgQFjAB&url=https%3A%2F%2Fwww.datanitro.com%2F&ei=02ImUK--C6KX1AWbpIDICg&usg=AFQjCNHOS6IopwZTOOXX-temg3t9jph8SQ&sig2=tzL6mJCTxRdYnOxnc3Dl5A',
-    url: 'http://localhost:8000/',
-    type: 'search - Google',
-    ua: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36'
+    uri: 'http://localhost:8000/',
+    medium: 'search - Google'
+  });
+});
+
+lab.test('emits referrer event if already has ref', async () => {
+  server.route({
+    method: 'GET',
+    path: '/',
+    handler(request, h) {
+      return h.view('index');
+    }
+  });
+
+  await server.register({
+    plugin: hapiReferrer,
+    options: {
+      verbose: true
+    }
+  });
+
+  await server.start();
+
+  let evt = null;
+  server.events.on('referrer', data => {
+    evt = data;
+  });
+
+  const ts = Date.now();
+  await wreck.get('http://localhost:8000/', {
+    headers: {
+      'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
+      referrer: 'https://www.google.co.uk/url?sa\u003dt\u0026rct\u003dj\u0026q\u003d\u0026esrc\u003ds\u0026source\u003dweb\u0026cd\u003d2\u0026ved\u003d0CEgQFjAB\u0026url\u003dhttps%3A%2F%2Fwww.datanitro.com%2F\u0026ei\u003d02ImUK--C6KX1AWbpIDICg\u0026usg\u003dAFQjCNHOS6IopwZTOOXX-temg3t9jph8SQ\u0026sig2\u003dtzL6mJCTxRdYnOxnc3Dl5A',
+      cookie: `ref=search%20-%20Google||${ts}||https%3A%2F%2Fwww.google.co.uk%2Furl%3Fsa%3Dt%26rct%3Dj%26q%3D%26esrc%3Ds%26source%3Dweb%26cd%3D2%26ved%3D0CEgQFjAB%26url%3Dhttps%253A%252F%252Fwww.datanitro.com%252F%26ei%3D02ImUK--C6KX1AWbpIDICg%26usg%3DAFQjCNHOS6IopwZTOOXX-temg3t9jph8SQ%26sig2%3DtzL6mJCTxRdYnOxnc3Dl5A`,
+    }
+  });
+
+  code.expect(evt.request).to.exist();
+  code.expect(evt.refInfo).to.equal({
+    medium: 'search - Google',
+    referrer: 'https://www.google.co.uk/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CEgQFjAB&url=https%3A%2F%2Fwww.datanitro.com%2F&ei=02ImUK--C6KX1AWbpIDICg&usg=AFQjCNHOS6IopwZTOOXX-temg3t9jph8SQ&sig2=tzL6mJCTxRdYnOxnc3Dl5A',
+    uri: 'undefined',
+    timestamp: ts.toString()
   });
 });
