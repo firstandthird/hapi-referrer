@@ -375,6 +375,48 @@ lab.test('dont set cookie if domain blacklisted', async () => {
   code.expect(cookie.length).to.equal(1);
 });
 
+lab.test('dont set cookie if doesnt match accept', async () => {
+  server.route({
+    method: 'GET',
+    path: '/',
+    handler(request, h) {
+      return h.view('index');
+    }
+  });
+
+  await server.register({
+    plugin: hapiReferrer,
+    options: {
+      accept: 'text/html'
+    }
+  });
+
+  await server.start();
+
+  const { res } = await wreck.get('http://localhost:8000/', {
+    headers: {
+    }
+  });
+  let cookie = res.headers['set-cookie'] || [];
+  code.expect(cookie.length).to.equal(0);
+
+  const result2 = await wreck.get('http://localhost:8000/', {
+    headers: {
+      accept: 'text/json'
+    }
+  });
+  cookie = result2.res.headers['set-cookie'] || [];
+  code.expect(cookie.length).to.equal(0);
+
+  const result = await wreck.get('http://localhost:8000/', {
+    headers: {
+      accept: 'text/html */*'
+    }
+  });
+  cookie = result.res.headers['set-cookie'] || [];
+  code.expect(cookie.length).to.equal(1);
+});
+
 lab.test('decorate request with getOriginalReferrer', async () => {
   let ref;
 

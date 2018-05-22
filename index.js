@@ -6,7 +6,8 @@ const defaults = {
   domains: [],
   ignoredPaths: [],
   decorationName: 'getOriginalReferrer',
-  verbose: false
+  verbose: false,
+  accept: ''
 };
 
 const register = (server, options) => {
@@ -20,6 +21,12 @@ const register = (server, options) => {
   server.ext('onPreHandler', (request, h) => {
     if (request.method !== 'get') {
       return h.continue;
+    }
+
+    if (options.accept) {
+      if (!request.headers || !request.headers.accept || request.headers.accept.indexOf(options.accept) === -1) {
+        return h.continue;
+      }
     }
 
     const reqUri = `${request.headers['x-forwarded-proto'] || request.server.info.protocol}://${request.info.host}${request.url.path}`;
