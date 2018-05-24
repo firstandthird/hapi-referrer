@@ -82,7 +82,7 @@ lab.test('direct with invalid cookies', async () => {
 
   const { res } = await wreck.get('http://localhost:8000/', {
     headers: {
-      cookie: 'ref=;;'
+      cookie: 'ref64=;;'
     }
   });
   const cookie = res.headers['set-cookie'] || [];
@@ -109,7 +109,8 @@ lab.test('direct with null cookie', async () => {
   });
   const cookie = res.headers['set-cookie'] || [];
   code.expect(cookie.length).to.equal(1);
-  code.expect(cookie[0]).to.include('ref=direct');
+  const term = `ref64=${Buffer.from('direct').toString('base64')}`;
+  code.expect(cookie[0]).to.include(term.substring(0, term.length - 2));
 });
 
 lab.test('ignores favicons', async () => {
@@ -196,7 +197,8 @@ lab.test('referrer set', async () => {
   });
   const cookie = res.headers['set-cookie'] || [];
   code.expect(cookie.length).to.equal(1);
-  code.expect(cookie[0]).to.include('search%20-%20Google');
+  const term = Buffer.from('search%20-%20Google').toString('base64');
+  code.expect(cookie[0]).to.include(term.substring(0, term.length - 3));
 });
 
 lab.test('empty referrer set', async () => {
@@ -221,7 +223,8 @@ lab.test('empty referrer set', async () => {
   // Treated as direct visit
   const cookie = res.headers['set-cookie'] || [];
   code.expect(cookie.length).to.equal(1);
-  code.expect(cookie[0]).to.include('ref=direct');
+  const term = `ref64=${Buffer.from('direct').toString('base64')}`;
+  code.expect(cookie[0]).to.include(term.substring(0, term.length - 2));
 });
 
 lab.test('bad referrer set', async () => {
@@ -244,7 +247,8 @@ lab.test('bad referrer set', async () => {
   });
   const cookie = res.headers['set-cookie'] || [];
   code.expect(cookie.length).to.equal(1);
-  code.expect(cookie[0]).to.include('ref=link');
+  const term = `ref64=${Buffer.from('link').toString('base64')}`;
+  code.expect(cookie[0]).to.include(term.substring(0, term.length - 3));
 });
 
 lab.test('unknown referrer', async () => {
@@ -267,7 +271,8 @@ lab.test('unknown referrer', async () => {
   });
   const cookie = res.headers['set-cookie'] || [];
   code.expect(cookie.length).to.equal(1);
-  code.expect(cookie[0]).to.include('ref=link');
+  const term = `ref64=${Buffer.from('link').toString('base64')}`;
+  code.expect(cookie[0]).to.include(term.substring(0, term.length - 3));
 });
 
 lab.test('internal ref', async () => {
@@ -332,7 +337,7 @@ lab.test('dont re-set cookie if set', async () => {
 
   const { res } = await wreck.get('http://localhost:8000/', {
     headers: {
-      cookie: `ref=search%20-%20Google||${Date.now()}||https%3A%2F%2Fwww.google.co.uk%2Furl%3Fsa%3Dt%26rct%3Dj%26q%3D%26esrc%3Ds%26source%3Dweb%26cd%3D2%26ved%3D0CEgQFjAB%26url%3Dhttps%253A%252F%252Fwww.datanitro.com%252F%26ei%3D02ImUK--C6KX1AWbpIDICg%26usg%3DAFQjCNHOS6IopwZTOOXX-temg3t9jph8SQ%26sig2%3DtzL6mJCTxRdYnOxnc3Dl5A`,
+      cookie: `ref64=search%20-%20Google||${Date.now()}||https%3A%2F%2Fwww.google.co.uk%2Furl%3Fsa%3Dt%26rct%3Dj%26q%3D%26esrc%3Ds%26source%3Dweb%26cd%3D2%26ved%3D0CEgQFjAB%26url%3Dhttps%253A%252F%252Fwww.datanitro.com%252F%26ei%3D02ImUK--C6KX1AWbpIDICg%26usg%3DAFQjCNHOS6IopwZTOOXX-temg3t9jph8SQ%26sig2%3DtzL6mJCTxRdYnOxnc3Dl5A`,
       referrer: 'http://www.facebook.com/l.php?u=http%3A%2F%2Fwww.bbc.co.uk%2Fnews%2Fworld-middle-east-17491344&h=9AQETn-0sAQG_wX_M3znTwpLi4cHiMvnYLNfKXx1Cfax0Gg&enc=AZOI2gtApY3kKYhAITt1FyIks0OWBBk9QOSyxlrEDx2bybjgeAQtR8UkVCYM0LAsX7Pjo0Clr-yC3FosYCyOczGR_ti6KbCzrxywXNYCrzLfHg'
     }
   });
@@ -437,7 +442,7 @@ lab.test('decorate request with getOriginalReferrer', async () => {
 
   await wreck.get('http://localhost:8000/', {
     headers: {
-      cookie: `ref=search%20-%20Google||${dt}||https%3A%2F%2Fwww.google.co.uk%2Furl%3Fsa%3Dt%26rct%3Dj%26q%3D%26esrc%3Ds%26source%3Dweb%26cd%3D2%26ved%3D0CEgQFjAB%26url%3Dhttps%253A%252F%252Fwww.datanitro.com%252F%26ei%3D02ImUK--C6KX1AWbpIDICg%26usg%3DAFQjCNHOS6IopwZTOOXX-temg3t9jph8SQ%26sig2%3DtzL6mJCTxRdYnOxnc3Dl5A||${encodeURIComponent('http://localhost:8000/')}`
+      cookie: `ref64=search%20-%20Google||${dt}||https%3A%2F%2Fwww.google.co.uk%2Furl%3Fsa%3Dt%26rct%3Dj%26q%3D%26esrc%3Ds%26source%3Dweb%26cd%3D2%26ved%3D0CEgQFjAB%26url%3Dhttps%253A%252F%252Fwww.datanitro.com%252F%26ei%3D02ImUK--C6KX1AWbpIDICg%26usg%3DAFQjCNHOS6IopwZTOOXX-temg3t9jph8SQ%26sig2%3DtzL6mJCTxRdYnOxnc3Dl5A||${encodeURIComponent('http://localhost:8000/')}`
     }
   });
 
@@ -581,7 +586,7 @@ lab.test('emits referrer event if already has ref', async () => {
     headers: {
       'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
       referrer: 'https://www.google.co.uk/url?sa\u003dt\u0026rct\u003dj\u0026q\u003d\u0026esrc\u003ds\u0026source\u003dweb\u0026cd\u003d2\u0026ved\u003d0CEgQFjAB\u0026url\u003dhttps%3A%2F%2Fwww.datanitro.com%2F\u0026ei\u003d02ImUK--C6KX1AWbpIDICg\u0026usg\u003dAFQjCNHOS6IopwZTOOXX-temg3t9jph8SQ\u0026sig2\u003dtzL6mJCTxRdYnOxnc3Dl5A',
-      cookie: `ref=search%20-%20Google||${ts}||https%3A%2F%2Fwww.google.co.uk%2Furl%3Fsa%3Dt%26rct%3Dj%26q%3D%26esrc%3Ds%26source%3Dweb%26cd%3D2%26ved%3D0CEgQFjAB%26url%3Dhttps%253A%252F%252Fwww.datanitro.com%252F%26ei%3D02ImUK--C6KX1AWbpIDICg%26usg%3DAFQjCNHOS6IopwZTOOXX-temg3t9jph8SQ%26sig2%3DtzL6mJCTxRdYnOxnc3Dl5A`,
+      cookie: `ref64=search%20-%20Google||${ts}||https%3A%2F%2Fwww.google.co.uk%2Furl%3Fsa%3Dt%26rct%3Dj%26q%3D%26esrc%3Ds%26source%3Dweb%26cd%3D2%26ved%3D0CEgQFjAB%26url%3Dhttps%253A%252F%252Fwww.datanitro.com%252F%26ei%3D02ImUK--C6KX1AWbpIDICg%26usg%3DAFQjCNHOS6IopwZTOOXX-temg3t9jph8SQ%26sig2%3DtzL6mJCTxRdYnOxnc3Dl5A`,
     }
   });
 
