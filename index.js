@@ -11,9 +11,8 @@ const defaults = {
   accept: ''
 };
 
-const register = async (server, options) => {
+const register = (server, options) => {
   // update the useragent's library of browsers so it is always current:
-  await useragent(true);
   options = Object.assign({}, defaults, options);
   server.event('referrer');
 
