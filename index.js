@@ -12,6 +12,7 @@ const defaults = {
 };
 
 const register = async (server, options) => {
+  await useragent(true);
   options = Object.assign({}, defaults, options);
   server.event('referrer');
 
