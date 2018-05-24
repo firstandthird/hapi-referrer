@@ -1,7 +1,7 @@
 const RefParser = require('referer-parser');
 
 const defaults = {
-  cookieName: 'ref',
+  cookieName: 'ref64',
   ttl: 30 * 86400000, // 30 days
   domains: [],
   ignoredPaths: [],
@@ -97,7 +97,8 @@ const register = (server, options) => {
       path: '/',
       ttl: options.ttl,
       clearInvalid: true,
-      ignoreErrors: true
+      ignoreErrors: true,
+      encoding: 'base64'
     });
 
     server.events.emit('referrer', {
