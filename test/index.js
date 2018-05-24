@@ -516,7 +516,8 @@ lab.test('verbose mode logs when cookie set', async () => {
       uri: 'http://localhost:8000/',
       medium: 'search - Google'
     },
-    ua: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36'
+    ua: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
+    browser: 'Chrome 51.0.2704'
   });
 });
 
