@@ -1,4 +1,5 @@
 const RefParser = require('referer-parser');
+const useragent = require('useragent');
 
 const defaults = {
   cookieName: 'ref64',
@@ -10,7 +11,7 @@ const defaults = {
   accept: ''
 };
 
-const register = (server, options) => {
+const register = async (server, options) => {
   options = Object.assign({}, defaults, options);
   server.event('referrer');
 
@@ -86,10 +87,12 @@ const register = (server, options) => {
       uri: reqUri
     };
 
+    const agent = useragent.parse(request.headers['user-agent']);
     if (options.verbose) {
       server.log(['hapi-referrer', 'set-cookie', 'info'], {
         refInfo,
-        ua: request.headers['user-agent']
+        ua: agent.source,
+        browser: `${agent.family} ${agent.major}.${agent.minor}.${agent.patch}`
       });
     }
 

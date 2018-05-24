@@ -27,7 +27,8 @@
   },
   "homepage": "https://github.com/firstandthird/hapi-referrer#readme",
   "dependencies": {
-    "referer-parser": "0.0.3"
+    "referer-parser": "0.0.3",
+    "useragent": "^2.3.0"
   },
   "devDependencies": {
     "code": "^5.2.0",
