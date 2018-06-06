@@ -114,8 +114,7 @@ const register = (server, options) => {
   });
 
   function getOriginalReferrer() {
-    const currentCookie = this.state[options.cookieName] || '';
-
+    const currentCookie = Buffer.from(this.state[options.cookieName] || '', 'base64').toString();
     if (!currentCookie) {
       return {};
     }
