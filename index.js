@@ -1,4 +1,4 @@
-const RefParser = require('referer-parser');
+const RefParser = require('@mediocre/referer-parser');
 const useragent = require('useragent');
 
 const defaults = {
@@ -31,7 +31,7 @@ const register = (server, options) => {
       }
     }
 
-    const reqUri = `${request.headers['x-forwarded-proto'] || request.server.info.protocol}://${request.info.host}${request.url.path}`;
+    const reqUri = `${request.headers['x-forwarded-proto'] || request.server.info.protocol}://${request.info.host}${request.path}`;
 
     let currentCookie = '';
 
@@ -48,7 +48,7 @@ const register = (server, options) => {
     }
 
     const blacklistedDomain = options.domains.find(item => request.info.referrer.indexOf(item) !== -1);
-    const blacklistedPath = options.ignoredPaths.find(item => request.url.path.indexOf(item) !== -1);
+    const blacklistedPath = options.ignoredPaths.find(item => request.path.indexOf(item) !== -1);
 
     if (blacklistedDomain || blacklistedPath) {
       return h.continue;

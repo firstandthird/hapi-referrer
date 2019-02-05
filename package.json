@@ -27,20 +27,20 @@
   },
   "homepage": "https://github.com/firstandthird/hapi-referrer#readme",
   "dependencies": {
-    "referer-parser": "0.0.3",
+    "@mediocre/referer-parser": "0.0.4",
     "useragent": "^2.3.0"
   },
   "devDependencies": {
-    "code": "^5.2.0",
-    "coveralls": "^3.0.1",
-    "eslint": "^4.19.1",
+    "code": "^5.2.4",
+    "coveralls": "^3.0.2",
+    "eslint": "^5.12.1",
     "eslint-config-firstandthird": "^4.0.1",
-    "eslint-plugin-import": "^2.12.0",
-    "handlebars": "^4.0.11",
-    "hapi": "^17.5.0",
-    "inert": "^5.1.0",
-    "lab": "^15.4.5",
-    "vision": "^5.3.2",
-    "wreck": "^14.0.2"
+    "eslint-plugin-import": "^2.15.0",
+    "handlebars": "^4.0.12",
+    "hapi": "^18.0.0",
+    "inert": "^5.1.2",
+    "lab": "^18.0.1",
+    "vision": "^5.4.4",
+    "wreck": "^14.1.3"
   }
 }
