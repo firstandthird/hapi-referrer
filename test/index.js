@@ -1,17 +1,17 @@
 // Referrer data from:
 // https://github.com/segmentio/inbound/blob/master/test/cases/referrers.json
 
-const Hapi = require('hapi');
-const code = require('code');
-const lab = exports.lab = require('lab').script();
-const wreck = require('wreck');
-const hapiReferrer = require('../index.js');
+const Hapi = require('@hapi/hapi');
+const code = require('@hapi/code');
+const lab = exports.lab = require('@hapi/lab').script();
+const wreck = require('@hapi/wreck');
+const hapiReferrer = require('..');
 const Path = require('path');
 
 let server;
 
 lab.beforeEach(async () => {
-  server = new Hapi.Server({
+  server = Hapi.server({
     port: 8000,
     routes: {
       state: {
@@ -23,8 +23,8 @@ lab.beforeEach(async () => {
     }
   });
 
-  await server.register(require('inert'));
-  await server.register(require('vision'));
+  await server.register(require('@hapi/inert'));
+  await server.register(require('@hapi/vision'));
 
   server.views({
     engines: {
