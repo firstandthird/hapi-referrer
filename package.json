@@ -3,44 +3,34 @@
   "version": "3.1.0",
   "description": "Tracks referrers",
   "main": "index.js",
-  "engine": {
-    "node": ">=6.0.0"
-  },
   "scripts": {
-    "test": "lab --leaks -e test -c ",
-    "coveralls": "lab -r lcov | coveralls"
-  },
-  "eslintConfig": {
-    "extends": "firstandthird",
-    "rules": {
-      "no-underscore-dangle": 0
-    }
+    "test": "lab",
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/firstandthird/hapi-referrer.git"
   },
-  "author": "",
+  "author": "First + Third, Inc",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/firstandthird/hapi-referrer/issues"
   },
   "homepage": "https://github.com/firstandthird/hapi-referrer#readme",
   "dependencies": {
-    "@mediocre/referer-parser": "0.0.4",
+    "@cgamesplay/referer-parser": "^1.0.20200414",
     "useragent": "^2.3.0"
   },
   "devDependencies": {
-    "code": "^5.2.4",
-    "coveralls": "^3.0.2",
-    "eslint": "^5.12.1",
-    "eslint-config-firstandthird": "^4.0.1",
+    "@hapi/code": "^8.0.2",
+    "@hapi/hapi": "^20.0.2",
+    "@hapi/inert": "^6.0.3",
+    "@hapi/lab": "^24.1.0",
+    "@hapi/vision": "^6.0.1",
+    "@hapi/wreck": "^17.0.0",
+    "eslint": "^7.14.0",
+    "eslint-config-firstandthird": "^6.0.2",
     "eslint-plugin-import": "^2.15.0",
-    "handlebars": "^4.0.12",
-    "hapi": "^18.0.0",
-    "inert": "^5.1.2",
-    "lab": "^18.0.1",
-    "vision": "^5.4.4",
-    "wreck": "^14.1.3"
+    "handlebars": "^4.0.12"
   }
 }

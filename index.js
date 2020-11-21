@@ -1,4 +1,4 @@
-const RefParser = require('@mediocre/referer-parser');
+const RefParser = require('@cgamesplay/referer-parser');
 const useragent = require('useragent');
 
 const defaults = {
