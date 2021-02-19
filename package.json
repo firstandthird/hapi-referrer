@@ -1,6 +1,6 @@
 {
   "name": "hapi-referrer",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Tracks referrers",
   "main": "index.js",
   "scripts": {
